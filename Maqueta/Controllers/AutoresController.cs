@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Maqueta.Filtros;
 using Maqueta.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,9 +19,12 @@ namespace Maqueta.Controllers
 		public AutoresController(ApplicationDbContext applicationDbContext) {
 			this.applicationDbContext = applicationDbContext;
 		}
+		//[ResponseCache(Duration =10)]
 		[HttpGet] // api/autores
 		[HttpGet("listado")]// api/autores/listado
 		[HttpGet("/listado")] // listado
+		[ServiceFilter(typeof(MiFiltroDeAccion))]
+	//	[Authorize]
 		public async Task<ActionResult<List<Autor>>> Get() {
 			return await applicationDbContext.Autores.Include(x => x.Libros).ToListAsync();
 
@@ -50,6 +55,11 @@ namespace Maqueta.Controllers
 		}
 		[HttpPost]
 		public async Task<ActionResult> Post([FromForm] Autor autor) {
+			var existeAutorConElMismoNombre = await applicationDbContext.Autores.AnyAsync(x => x.Nombre == autor.Nombre);
+            if (existeAutorConElMismoNombre)
+            {
+				return BadRequest($"Ya existe un autor con el nombre {autor.Nombre}");
+            }
 			applicationDbContext.Add(autor);
 			await applicationDbContext.SaveChangesAsync();
 			return Ok();
