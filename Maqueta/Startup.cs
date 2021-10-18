@@ -5,9 +5,11 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using AutoMapper;
 using Maqueta.Filtros;
 using Maqueta.Middleware;
 using Maqueta.Servicios;
+using Maqueta.Utilidades;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -39,18 +41,30 @@ namespace Maqueta
 			services.AddControllers(options =>
 			{
 				options.Filters.Add(typeof(FiltroDeExcepcion));
-				options.OutputFormatters.RemoveType<SystemTextJsonOutputFormatter>();
-				options.OutputFormatters.Add(new SystemTextJsonOutputFormatter(new JsonSerializerOptions(JsonSerializerDefaults.Web)
-				{
-					ReferenceHandler = ReferenceHandler.Preserve,
-				}));
+				//options.OutputFormatters.RemoveType<SystemTextJsonOutputFormatter>();
+				//options.OutputFormatters.Add(new SystemTextJsonOutputFormatter(new JsonSerializerOptions(JsonSerializerDefaults.Web)
+				//{
+				//	ReferenceHandler = ReferenceHandler.Preserve,
+				//}));
 			});
+			services.AddControllers().AddNewtonsoftJson(x =>
+ x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 			services.AddTransient<MiFiltroDeAccion>();
 			services.AddResponseCaching();
 			services.AddHostedService<EscribirEnArchivo>();
 			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+			var mappingConfig = new MapperConfiguration(mc =>
+			{
+				mc.AddProfile(new AutoMapperProfiles());
+				
+			});
 
-			services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("defaultConnection")));
+			IMapper mapper = mappingConfig.CreateMapper();
+			
+			services.AddSingleton(mapper);
+
+			services.AddMvc();
+			services.AddDbContext<ApplicationDbContext>(options => { options.UseSqlServer(Configuration.GetConnectionString("defaultConnection"));});
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

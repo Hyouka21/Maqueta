@@ -4,14 +4,16 @@ using Maqueta;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Maqueta.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211018121621_Comentarios")]
+    partial class Comentarios
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,24 +38,6 @@ namespace Maqueta.Migrations
                     b.ToTable("Autores");
                 });
 
-            modelBuilder.Entity("Maqueta.Models.AutorLibro", b =>
-                {
-                    b.Property<int>("AutorId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("LibroId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Orden")
-                        .HasColumnType("int");
-
-                    b.HasKey("AutorId", "LibroId");
-
-                    b.HasIndex("LibroId");
-
-                    b.ToTable("AutoresLibros");
-                });
-
             modelBuilder.Entity("Maqueta.Models.Comentario", b =>
                 {
                     b.Property<int>("Id")
@@ -64,7 +48,10 @@ namespace Maqueta.Migrations
                     b.Property<string>("Contenido")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("LibroId")
+                    b.Property<int?>("LibroId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LirboId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -81,9 +68,6 @@ namespace Maqueta.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime?>("FechaPublicacion")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Titulo")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -93,45 +77,17 @@ namespace Maqueta.Migrations
                     b.ToTable("Libros");
                 });
 
-            modelBuilder.Entity("Maqueta.Models.AutorLibro", b =>
-                {
-                    b.HasOne("Maqueta.Models.Autor", "Autor")
-                        .WithMany("AutoresLibros")
-                        .HasForeignKey("AutorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Maqueta.Models.Libro", "Libro")
-                        .WithMany("AutoresLibros")
-                        .HasForeignKey("LibroId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Autor");
-
-                    b.Navigation("Libro");
-                });
-
             modelBuilder.Entity("Maqueta.Models.Comentario", b =>
                 {
                     b.HasOne("Maqueta.Models.Libro", "Libro")
                         .WithMany("Comentarios")
-                        .HasForeignKey("LibroId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("LibroId");
 
                     b.Navigation("Libro");
                 });
 
-            modelBuilder.Entity("Maqueta.Models.Autor", b =>
-                {
-                    b.Navigation("AutoresLibros");
-                });
-
             modelBuilder.Entity("Maqueta.Models.Libro", b =>
                 {
-                    b.Navigation("AutoresLibros");
-
                     b.Navigation("Comentarios");
                 });
 #pragma warning restore 612, 618

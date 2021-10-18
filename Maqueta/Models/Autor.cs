@@ -14,16 +14,16 @@ namespace Maqueta.Models
 		[StringLength(maximumLength:50,ErrorMessage ="El campo {0} no puede ser mayor a {1} caracteres")]
 		[PrimeraLetraValidacionAtributte]
 		public string Nombre { get; set; }
-		[Range(18,50,ErrorMessage ="El campo {0} debe ser mayor a {1} y menor a {2}")]
-		[NotMapped]
-        public int Édad { get; set; }
-		[CreditCard]
-		[NotMapped]
-		public string TarjetaDeCredito { get; set; }
-		[Url]
-		[NotMapped]
-        public string UrlFoto { get; set; }
-        public List<Libro> Libros { get; set; }
+        //[Range(18,50,ErrorMessage ="El campo {0} debe ser mayor a {1} y menor a {2}")]
+        //[NotMapped]
+        //      public int Édad { get; set; }
+        //[CreditCard]
+        //[NotMapped]
+        //public string TarjetaDeCredito { get; set; }
+        //[Url]
+        //[NotMapped]
+        //      public string UrlFoto { get; set; }
+        public List<AutorLibro> AutoresLibros { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
