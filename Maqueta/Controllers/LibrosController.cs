@@ -29,6 +29,9 @@ namespace Maqueta.Controllers
 			var libros=await applicationDb.Libros.Include(x => x.Comentarios)
 				.Include(x=> x.AutoresLibros).ThenInclude(x=>x.Autor)
 				.FirstOrDefaultAsync(x => x.Id == id);
+			if(libros == null) {
+				return NotFound();
+			}
 			libros.AutoresLibros = libros.AutoresLibros.OrderBy(x => x.Orden).ToList();
 			return mapper.Map<LibrosDtosConAutor>(libros);
 		}
@@ -78,13 +81,13 @@ namespace Maqueta.Controllers
 			}
 		}
 		[HttpPatch("{id:int}")]
-		public async Task<ActionResult> Patch(int id, [FromForm] JsonPatchDocument<LibroPatchDto> jsonPatch)
+		public async Task<ActionResult> Patch(int id, JsonPatchDocument<LibroPatchDto> jsonPatch)
         {
 			if(jsonPatch == null)
             {
 				return BadRequest();
             }
-			var libroDb = applicationDb.Libros.FirstOrDefaultAsync(x => x.Id == id);
+			var libroDb = await applicationDb.Libros.FirstOrDefaultAsync(x => x.Id == id);
             if (libroDb == null)
             {
 				return NotFound();
@@ -97,7 +100,7 @@ namespace Maqueta.Controllers
             {
 				return BadRequest(ModelState);
             }
-			await mapper.Map(libroDto,libroDb);
+             mapper.Map(libroDto,libroDb);
 			await applicationDb.SaveChangesAsync();
 			return NoContent();
 

@@ -6,6 +6,7 @@ using AutoMapper;
 using Maqueta.Dtos;
 using Maqueta.Filtros;
 using Maqueta.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +29,7 @@ namespace Maqueta.Controllers
 		[HttpGet("listado")]// api/autores/listado
 		[HttpGet("/listado")] // listado
 		[ServiceFilter(typeof(MiFiltroDeAccion))]
-	//	[Authorize]
+		[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy ="EsAdmin")]
 		public async Task<ActionResult<List<Autor>>> Get() {
 			return await applicationDbContext.Autores.ToListAsync();
 
@@ -93,7 +94,7 @@ namespace Maqueta.Controllers
 			}
 			applicationDbContext.Remove(new Autor() { Id = id });
 			await applicationDbContext.SaveChangesAsync();
-			return Ok();
+			return NoContent();
 		}
 		
 	}

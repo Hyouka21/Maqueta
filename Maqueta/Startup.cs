@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -15,6 +17,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +25,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Maqueta
 {
@@ -29,6 +33,7 @@ namespace Maqueta
 	{
 		public Startup(IConfiguration configuration)
 		{
+			JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 			Configuration = configuration;
 		}
 
@@ -52,7 +57,17 @@ namespace Maqueta
 			services.AddTransient<MiFiltroDeAccion>();
 			services.AddResponseCaching();
 			services.AddHostedService<EscribirEnArchivo>();
-			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+				.AddJwtBearer(
+				opciones => opciones.TokenValidationParameters = new TokenValidationParameters
+				{
+					ValidateIssuer = false,
+					ValidateAudience = false,
+					ValidateLifetime = true,
+					ValidateIssuerSigningKey = true,
+					IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["llavejwt"])),
+					ClockSkew = TimeSpan.Zero
+				});
 			var mappingConfig = new MapperConfiguration(mc =>
 			{
 				mc.AddProfile(new AutoMapperProfiles());
@@ -62,9 +77,29 @@ namespace Maqueta
 			IMapper mapper = mappingConfig.CreateMapper();
 			
 			services.AddSingleton(mapper);
-
+			services.AddIdentity<IdentityUser, IdentityRole>()
+				.AddEntityFrameworkStores<ApplicationDbContext>()
+				.AddDefaultTokenProviders();
 			services.AddMvc();
 			services.AddDbContext<ApplicationDbContext>(options => { options.UseSqlServer(Configuration.GetConnectionString("defaultConnection"));});
+			//autorizacion basada en claims 
+			services.AddAuthorization(opciones =>
+			{
+				opciones.AddPolicy("EsAdmin", politica => politica.RequireClaim("EsAdmin"));
+			});
+			// agregar politica de seguridad de cors para dominios web-.. basicamente yo le digo de que url permito hacer peticiones a mi apirest 
+			// solo funciona para aplicacion web 
+			services.AddCors(opcion =>
+			{
+				opcion.AddDefaultPolicy(builder =>
+				{
+					builder.WithOrigins("aquivalaurl").AllowAnyMethod().AllowAnyHeader(); //.WithExposedHeaders() //ppara exponer cabezeras que vas a devolver
+				});
+
+			});
+			// acceso a los servicios de proteccion de datos
+			services.AddDataProtection();
+
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -87,7 +122,7 @@ namespace Maqueta
 			}
 
 			app.UseHttpsRedirection();
-
+			app.UseCors();// usaa cors
 			app.UseRouting();
 			app.UseResponseCaching();
 

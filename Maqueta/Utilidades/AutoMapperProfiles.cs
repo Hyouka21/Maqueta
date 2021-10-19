@@ -14,6 +14,7 @@ namespace Maqueta.Utilidades
         {
 
             CreateMap<LibroPatchDto, Libro>().ReverseMap();
+            
             CreateMap<AutorCreacionDtos, Autor>();
             CreateMap<Autor, AutorDtos>();
             CreateMap<Autor, AutorDtosConLibro>().ForMember(autor => autor.Libros, opciones => opciones.MapFrom(MapAutorDtoLibros));

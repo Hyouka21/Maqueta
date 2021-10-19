@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Maqueta.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,10 +18,12 @@ namespace Maqueta.Controllers
     public class ComentariosController : ControllerBase
     {
         private readonly ApplicationDbContext context;
+        private readonly UserManager<IdentityUser> userManager;
 
-        public ComentariosController(ApplicationDbContext context)
+        public ComentariosController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             this.context = context;
+            this.userManager = userManager;
         }
         [HttpGet]
         public async  Task<ActionResult<List<Comentario>>> Get(int libroId)
@@ -29,8 +34,12 @@ namespace Maqueta.Controllers
         }
 
         [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> Post(int libroId, [FromForm] string contenido)
         {
+            var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+            var email = emailClaim.Value;
+            var usuario = await userManager.FindByEmailAsync(email);
             var existe = await context.Libros.AnyAsync(x => x.Id == libroId);
             if (!existe)
             {
@@ -39,7 +48,9 @@ namespace Maqueta.Controllers
             var comen = new Comentario()
             {
                 LibroId = libroId,
-                Contenido = contenido
+                Contenido = contenido,
+                UsuarioId=usuario.Id
+
             };
             context.Add(comen);
             await context.SaveChangesAsync();

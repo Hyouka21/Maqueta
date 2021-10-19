@@ -4,11 +4,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Maqueta.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Maqueta
-{
-	public class ApplicationDbContext : DbContext
+{ // para usar el identity
+	public class ApplicationDbContext : IdentityDbContext// DbContext
 	{
 		public ApplicationDbContext([NotNullAttribute] DbContextOptions options) : base(options)
 		{
