@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Maqueta.Dtos;
+using Maqueta.Servicios;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
@@ -24,17 +25,20 @@ namespace Maqueta.Controllers
         private readonly UserManager<IdentityUser> userManager;
         private readonly IConfiguration configuration;
         private readonly SignInManager<IdentityUser> signInManager;
+        private readonly ServicioLlaves servicioLlaves;
         private readonly IDataProtector dataprotector;
 
 
-        public CuentasController(UserManager<IdentityUser> userManager, IConfiguration configuration, SignInManager<IdentityUser> signInManager, IDataProtectionProvider dataProtection)
+        public CuentasController(UserManager<IdentityUser> userManager, IConfiguration configuration, SignInManager<IdentityUser> signInManager, IDataProtectionProvider dataProtection,ServicioLlaves servicioLlaves)
         {
             this.userManager = userManager;
             this.configuration = configuration;
             this.signInManager = signInManager;
+            this.servicioLlaves = servicioLlaves;
             dataprotector = dataProtection.CreateProtector("valor_unico_y_secreto");
 
         }
+       /*
         [HttpGet("encriptar")]
         public ActionResult Encriptar()
         {
@@ -54,6 +58,7 @@ namespace Maqueta.Controllers
             var textoDesencriptado = protectorLimitado.Unprotect(textoCifrado);
             return Ok(new { textoCifrado, textoDesencriptado });
         }
+       */
         [HttpPost("registrar")]
         public async Task<ActionResult<RespuestaAutentificacion>> Registrar(CredencialesUsuario credencialUsuario)
         {
@@ -62,7 +67,8 @@ namespace Maqueta.Controllers
             var resultado = await userManager.CreateAsync(usuario,credencialUsuario.Password);
             if (resultado.Succeeded)
             {
-                return await ConstruirToken(credencialUsuario);
+                await servicioLlaves.CrearLlave(usuario.Id, Models.TipoLlave.Gratuita);
+                return await ConstruirToken(credencialUsuario,usuario.Id);
             }
             else
             {
@@ -76,7 +82,8 @@ namespace Maqueta.Controllers
                 ,credencialesUsuario.Password,isPersistent:false,lockoutOnFailure:false);
             if (resultado.Succeeded)
             {
-                return await ConstruirToken(credencialesUsuario);
+                var usuario = await userManager.FindByEmailAsync(credencialesUsuario.Email);
+                return await ConstruirToken(credencialesUsuario,usuario.Id);
             }
             else
             {
@@ -94,14 +101,16 @@ namespace Maqueta.Controllers
             {
                 Email=email,
             };
-            return await ConstruirToken(credencialesUsuario);
+            var id = HttpContext.User.Claims.Where(claim => claim.Type == "id").FirstOrDefault().Value;
+            return await ConstruirToken(credencialesUsuario,id);
 
         }
-        private async Task<RespuestaAutentificacion> ConstruirToken(CredencialesUsuario credencialesUsuario)
+        private async Task<RespuestaAutentificacion> ConstruirToken(CredencialesUsuario credencialesUsuario,string usuarioId)
         {
             var claim = new List<Claim>()
             {
-                new Claim("email",credencialesUsuario.Email)
+                new Claim("email",credencialesUsuario.Email),
+                new Claim("id",usuarioId)
             };
             var usuario = await userManager.FindByEmailAsync(credencialesUsuario.Email);
             var claimBd = await userManager.GetClaimsAsync(usuario);

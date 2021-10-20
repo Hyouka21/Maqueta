@@ -100,6 +100,9 @@ namespace Maqueta
 			// acceso a los servicios de proteccion de datos
 			services.AddDataProtection();
 
+			// activo mi servicio de llaves 
+			services.AddScoped<ServicioLlaves>();
+
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

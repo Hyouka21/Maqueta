@@ -50,7 +50,7 @@ namespace Maqueta.Controllers
 			}
 			return mapper.Map<AutorDtosConLibro>(autor);
 		}
-		[HttpGet("{nombre}")]
+		[HttpGet("{nombre}",Name ="obtenerAutorPorNombre")]
 		public async Task<ActionResult<Autor>> Get(string nombre)
 		{
 			var autor = await applicationDbContext.Autores.FirstOrDefaultAsync(x => x.Nombre.Contains(nombre));
@@ -61,7 +61,7 @@ namespace Maqueta.Controllers
 			}
 			return Ok(autor);
 		}
-		[HttpPost]
+		[HttpPost(Name ="crearAutor")]
 		public async Task<ActionResult> Post([FromForm] Autor autor) {
 			var existeAutorConElMismoNombre = await applicationDbContext.Autores.AnyAsync(x => x.Nombre == autor.Nombre);
             if (existeAutorConElMismoNombre)
@@ -73,7 +73,7 @@ namespace Maqueta.Controllers
 			var autorDto = mapper.Map<AutorDtos>(autor);
 			return CreatedAtRoute("ObtenerAutor",new { Id = autor.Id},autorDto);
 		}
-		[HttpPut("{id:int}")]//api/autores/1
+		[HttpPut("{id:int}",Name ="actualizarAutorPorId")]//api/autores/1
 		public async Task<ActionResult> Put([FromForm] AutorCreacionDtos autorDtos, int id) {
 			var existe = await applicationDbContext.Autores.AnyAsync(x => x.Id == id);
 			if (!existe)
@@ -86,7 +86,7 @@ namespace Maqueta.Controllers
 			return NoContent();
 
 		}
-		[HttpDelete("{id:int}")]
+		[HttpDelete("{id:int}",Name ="borrarAutorPorId")]
 		public async Task<ActionResult> Delete(int id){
 			var existe = await applicationDbContext.Autores.AnyAsync(x => x.Id == id);
 			if (!existe) {
