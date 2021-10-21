@@ -93,7 +93,7 @@ namespace Maqueta
 			{
 				opcion.AddDefaultPolicy(builder =>
 				{
-					builder.WithOrigins("aquivalaurl").AllowAnyMethod().AllowAnyHeader(); //.WithExposedHeaders() //ppara exponer cabezeras que vas a devolver
+					builder.WithOrigins("http://127.0.0.1:5500").AllowAnyMethod().AllowAnyHeader(); //.WithExposedHeaders() //ppara exponer cabezeras que vas a devolver
 				});
 
 			});
@@ -126,6 +126,7 @@ namespace Maqueta
 
 			app.UseHttpsRedirection();
 			app.UseCors();// usaa cors
+			app.useLimitarPeticiones();// limita peticiones con este midllerware creado por mi
 			app.UseRouting();
 			app.UseResponseCaching();
 

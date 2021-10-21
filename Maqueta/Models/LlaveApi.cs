@@ -14,6 +14,8 @@ namespace Maqueta.Models
         public TipoLlave Tipo { get; set; }
         public bool Activa { get; set; }
         public IdentityUser Usuario { get; set; }
+        public List<RestriccionDominio> RestriccionesDominio { get; set; }
+        public List<RestriccionIP> RestriccionesIP { get; set; }
 
     }
     public enum TipoLlave

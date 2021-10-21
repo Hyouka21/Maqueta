@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="HtmlPrueba\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

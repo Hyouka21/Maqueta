@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>FrontEnd</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <script>
+        var headers = new Headers({
+            "X-Api-Key": "f7d8ccef030144f5a560bd1d8984b360",
+            "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imdhc0BtYWlsLmNvbSIsImlkIjoiYjY4MTUzODAtYmJhYy00MjUwLWE2OTUtMGYzODE4OGM3MDU0IiwiRXNBZG1pbiI6IjEiLCJleHAiOjE2NjYzNTM0NTR9.vllUbCHe_xk-_ow5fHPSBsDWuedwAQUfjCk_1hPRWL0"
+        });
+       
+        fetch('https://localhost:44387/api/autores', {headers})
+        .then(response => response.json())
+        .then(data => console.log(data));
+    </script>
+</body>
+</html>
